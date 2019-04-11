@@ -35,12 +35,19 @@ class ProductSearchExportRepositoryTest extends TransactionFunctionalTestCase
 
         $expectedStructure = [
             'id',
-            'name',
             'catnum',
             'partno',
             'ean',
+            'name',
             'description',
             'shortDescription',
+            'brand',
+            'flags',
+            'categories',
+            'in_stock',
+            'prices',
+            'parameters',
+            'ordering_priority',
         ];
         sort($expectedStructure);
 

@@ -5,6 +5,8 @@ namespace Shopsys\FrameworkBundle\Model\Product\Search;
 use Doctrine\ORM\QueryBuilder;
 use Elasticsearch\Client;
 use Shopsys\FrameworkBundle\Component\Elasticsearch\ElasticsearchStructureManager;
+use Shopsys\FrameworkBundle\Model\Pricing\Group\PricingGroup;
+use Shopsys\FrameworkBundle\Model\Product\Filter\ProductFilterData;
 
 class ProductElasticsearchRepository
 {
@@ -122,7 +124,58 @@ class ProductElasticsearchRepository
         }
         $parameters = $this->createQuery($this->getIndexName($domainId), $searchText);
         $result = $this->client->search($parameters);
+
         return $this->extractIds($result);
+    }
+
+    public function getOrderedProductIdsByFilterDataFromCategory(int $domainId, ProductFilterData $productFilterData, string $orderingModeId, int $categoryId, PricingGroup $pricingGroup): array
+    {
+        $filterQuery = $this->createFilterQuery($this->getIndexName($domainId), $productFilterData, $orderingModeId, $pricingGroup);
+        $filterQuery->filterByCategory([$categoryId]);
+
+        $result = $this->client->search($filterQuery->getQuery());
+
+        return $this->extractIds($result);
+    }
+
+    public function getOrderedProductIdsByFilterData(int $domainId, ProductFilterData $productFilterData, string $orderingModeId): array
+    {
+        return [];
+    }
+
+    protected function createFilterQuery(string $indexName, ProductFilterData $productFilterData, string $orderingModeId, PricingGroup $pricingGroup): FilterQuery
+    {
+        $filterQuery = new FilterQuery($indexName);
+
+        $brandIds = [];
+        foreach ($productFilterData->brands as $brand) {
+            $brandIds[] = $brand->getId();
+        }
+        if ($brandIds) {
+            $filterQuery->filterByBrands($brandIds);
+        }
+
+        $flagIds = [];
+        foreach ($productFilterData->flags as $flag) {
+            $flagIds[] = $flag->getId();
+        }
+        if ($flagIds) {
+            $filterQuery->filterByFlags($flagIds);
+        }
+
+        if ($productFilterData->parameters) {
+            $filterQuery->filterByParameters($productFilterData->parameters);
+        }
+
+        if ($productFilterData->inStock) {
+            $filterQuery->filterOnlyInStock();
+        }
+
+        if ($productFilterData->maximalPrice || $productFilterData->minimalPrice) {
+            $filterQuery->filterByPrices($pricingGroup, $productFilterData->minimalPrice, $productFilterData->maximalPrice);
+        }
+
+        return $filterQuery;
     }
 
     /**
@@ -170,6 +223,7 @@ class ProductElasticsearchRepository
     protected function extractIds(array $result): array
     {
         $hits = $result['hits']['hits'];
+
         return array_column($hits, '_id');
     }
 

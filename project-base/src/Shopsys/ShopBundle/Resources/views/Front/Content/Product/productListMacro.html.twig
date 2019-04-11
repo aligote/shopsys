@@ -9,7 +9,7 @@
                     <a href="{{ url('front_product_detail', {'id': product.id}) }}" class="list-products__item__block">
                         <{{ productHeadingTagName|default('h2') }} class="list-products__item__title js-list-products-item-title">
                             {{ product.name }}
-                        </{{ productHeadingTagName|default('h2') }}>
+                        </{{ productHeadingTagName|default('h2') }}> {{ product.id }}
 
                         <div class="list-products__item__image dont-print">
                             {{ image(product, { size: 'list', alt: product.name }) }}

@@ -148,6 +148,8 @@ services:
 
     Shopsys\FrameworkBundle\Model\Product\ProductOnCurrentDomainFacade: ~
 
+    Shopsys\FrameworkBundle\Model\Product\ProductOnCurrentDomainFromElasticFacade: ~
+
     Shopsys\FrameworkBundle\Model\Product\Pricing\ProductPriceCalculationForUser: ~
 
     Shopsys\FrameworkBundle\Model\Product\ProductRepository: ~

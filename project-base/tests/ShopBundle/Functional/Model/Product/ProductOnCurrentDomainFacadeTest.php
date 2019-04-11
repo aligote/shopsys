@@ -3,19 +3,18 @@
 namespace Tests\ShopBundle\Functional\Model\Product;
 
 use Shopsys\FrameworkBundle\Component\Money\Money;
+use Shopsys\FrameworkBundle\Component\Paginator\PaginationResult;
 use Shopsys\FrameworkBundle\Model\Product\Filter\ParameterFilterData;
 use Shopsys\FrameworkBundle\Model\Product\Filter\ProductFilterData;
-use Shopsys\FrameworkBundle\Model\Product\Listing\ProductListOrderingConfig;
 use Shopsys\FrameworkBundle\Model\Product\Parameter\ParameterRepository;
 use Shopsys\FrameworkBundle\Model\Product\Parameter\ParameterValue;
-use Shopsys\FrameworkBundle\Model\Product\ProductOnCurrentDomainFacade;
 use Shopsys\ShopBundle\DataFixtures\Demo\BrandDataFixture;
 use Shopsys\ShopBundle\DataFixtures\Demo\CategoryDataFixture;
 use Shopsys\ShopBundle\DataFixtures\Demo\FlagDataFixture;
 use Shopsys\ShopBundle\Model\Category\Category;
 use Tests\ShopBundle\Test\TransactionFunctionalTestCase;
 
-class ProductOnCurrentDomainFacadeTest extends TransactionFunctionalTestCase
+abstract class ProductOnCurrentDomainFacadeTest extends TransactionFunctionalTestCase
 {
     public function testFilterByMinimalPrice()
     {
@@ -108,6 +107,7 @@ class ProductOnCurrentDomainFacadeTest extends TransactionFunctionalTestCase
             ['cs' => 'Rozlišení tisku'],
             [['cs' => '4800x1200']]
         );
+
         $productFilterData = new ProductFilterData();
         $productFilterData->parameters = [$parameterFilterData];
 
@@ -200,19 +200,5 @@ class ProductOnCurrentDomainFacadeTest extends TransactionFunctionalTestCase
      * @param \Shopsys\ShopBundle\Model\Category\Category $category
      * @return \Shopsys\FrameworkBundle\Component\Paginator\PaginationResult
      */
-    private function getPaginationResultInCategory(ProductFilterData $productFilterData, Category $category)
-    {
-        /** @var \Shopsys\FrameworkBundle\Model\Product\ProductOnCurrentDomainFacade $productOnCurrentDomainFacade */
-        $productOnCurrentDomainFacade = $this->getContainer()->get(ProductOnCurrentDomainFacade::class);
-        $page = 1;
-        $limit = PHP_INT_MAX;
-
-        return $productOnCurrentDomainFacade->getPaginatedProductsInCategory(
-            $productFilterData,
-            ProductListOrderingConfig::ORDER_BY_NAME_ASC,
-            $page,
-            $limit,
-            $category->getId()
-        );
-    }
+    abstract public function getPaginationResultInCategory(ProductFilterData $productFilterData, Category $category): PaginationResult;
 }

@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Shopsys\FrameworkBundle\Component\Doctrine\QueryBuilderExtender;
+use Shopsys\FrameworkBundle\Component\Paginator\PaginationResult;
 use Shopsys\FrameworkBundle\Component\Paginator\QueryPaginator;
 use Shopsys\FrameworkBundle\Model\Category\Category;
 use Shopsys\FrameworkBundle\Model\Localization\Localization;
@@ -135,8 +136,8 @@ class ProductRepository
             ->from(Product::class, 'p')
             ->join(ProductVisibility::class, 'prv', Join::WITH, 'prv.product = p.id')
             ->where('prv.domainId = :domainId')
-                ->andWhere('prv.pricingGroup = :pricingGroup')
-                ->andWhere('prv.visible = TRUE')
+            ->andWhere('prv.pricingGroup = :pricingGroup')
+            ->andWhere('prv.visible = TRUE')
             ->orderBy('p.id');
 
         $queryBuilder->setParameter('domainId', $domainId);
@@ -182,6 +183,7 @@ class ProductRepository
     ) {
         $queryBuilder = $this->getAllListableQueryBuilder($domainId, $pricingGroup);
         $this->filterByCategory($queryBuilder, $category, $domainId);
+
         return $queryBuilder;
     }
 
@@ -198,6 +200,7 @@ class ProductRepository
     ) {
         $queryBuilder = $this->getAllListableQueryBuilder($domainId, $pricingGroup);
         $this->filterByBrand($queryBuilder, $brand);
+
         return $queryBuilder;
     }
 
@@ -214,6 +217,7 @@ class ProductRepository
     ) {
         $queryBuilder = $this->getAllSellableQueryBuilder($domainId, $pricingGroup);
         $this->filterByCategory($queryBuilder, $category, $domainId);
+
         return $queryBuilder;
     }
 
@@ -379,6 +383,17 @@ class ProductRepository
         );
 
         return $queryBuilder;
+    }
+
+    public function getOfferedPaginationResultForProductIds($domainId, PricingGroup $pricingGroup, array $productIds, int $page, int $limit): PaginationResult
+    {
+        $queryBuilder = $this->getAllOfferedQueryBuilder($domainId, $pricingGroup)
+            ->andWhere('p.id IN (:productIds)')
+            ->setParameter('productIds', $productIds);
+
+        $queryPaginator = new QueryPaginator($queryBuilder);
+
+        return $queryPaginator->getResult($page, $limit);
     }
 
     /**
